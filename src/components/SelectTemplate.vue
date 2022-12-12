@@ -4,6 +4,15 @@ import { ref, Ref } from 'vue'
 import Button from 'primevue/button';
 import Card from 'primevue/card';
 import InputText from 'primevue/inputtext';
+
+import AppState, { AppPage } from '../types/AppState'
+
+defineProps({
+	appState: {
+		type: AppState,
+		required: true,
+	}
+});
 </script>
 
 <template>
@@ -29,7 +38,7 @@ import InputText from 'primevue/inputtext';
 		</template>
 
 		<template #footer>
-			<Button @click="" icon="pi pi-forward" iconPos="left" label="Proceed" style="float:right"></Button>
+			<Button @click="onProceedClick" icon="pi pi-forward" iconPos="left" label="Proceed" style="float:right"></Button>
 			<div style="clear: both"></div>
 		</template>
 	</Card>
@@ -86,13 +95,12 @@ const onFileDrop = (e: DragEvent) => {
 	filePath.value = file.path;
 };
 
-const methods = {
-	onBrowseClick,
-	onFileDragOver,
-	onFileDrop,
-};
-
 export default {
-	methods,
+	methods: {
+		onProceedClick: function(e: MouseEvent) {
+			e.preventDefault();
+			this.appState.page = AppPage.Edit;
+		}
+	}
 }
 </script>
