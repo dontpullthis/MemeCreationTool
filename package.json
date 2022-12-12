@@ -1,11 +1,11 @@
 {
-  "name": "electron-vue-vite",
-  "version": "2.0.0",
+  "name": "meme-creation-tool",
+  "version": "0.1.0",
   "main": "dist-electron/main/index.js",
-  "description": "Really simple Electron + Vue + Vite boilerplate.",
-  "author": "草鞋没号 <308487730@qq.com>",
-  "license": "MIT",
-  "private": true,
+  "description": "A simple meme creation tool",
+  "author": "Serg <1899416+dontpullthis@users.noreply.github.com>",
+  "license": "GPL-3.0",
+  "private": false,
   "scripts": {
     "start": "npm run dev",
     "dev": "vite",
@@ -35,9 +35,10 @@
   },
   "keywords": [
     "electron",
-    "rollup",
     "vite",
     "vue3",
-    "vue"
+    "vue",
+    "meme",
+    "mems"
   ]
 }
