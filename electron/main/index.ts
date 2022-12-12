@@ -12,7 +12,7 @@ process.env.DIST_ELECTRON = join(__dirname, '..')
 process.env.DIST = join(process.env.DIST_ELECTRON, '../dist')
 process.env.PUBLIC = app.isPackaged ? process.env.DIST : join(process.env.DIST_ELECTRON, '../public')
 
-import { app, BrowserWindow, shell, ipcMain } from 'electron'
+import { app, BrowserWindow, dialog, shell, ipcMain } from 'electron'
 import { release } from 'os'
 import { join } from 'path'
 
@@ -114,8 +114,5 @@ ipcMain.handle('open-win', (event, arg) => {
 })
 
 ipcMain.handle('openFile', (event, path) => {
-  const {dialog} = require('electron');
-  const fs = require('fs');
-
   return dialog.showOpenDialog(win);
 });
