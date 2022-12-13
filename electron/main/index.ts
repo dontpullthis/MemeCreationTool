@@ -15,6 +15,9 @@ process.env.PUBLIC = app.isPackaged ? process.env.DIST : join(process.env.DIST_E
 import { app, BrowserWindow, dialog, shell, ipcMain } from 'electron'
 import { release } from 'os'
 import { join } from 'path'
+import fs from 'fs';
+
+const axios = require('axios');
 
 // Disable GPU Acceleration for Windows 7
 if (release().startsWith('6.1')) app.disableHardwareAcceleration()
@@ -113,6 +116,19 @@ ipcMain.handle('open-win', (event, arg) => {
   }
 })
 
-ipcMain.handle('showOpenDialog', (event, path) => {
+// Opens a file dialog
+ipcMain.handle('showOpenDialog', (event, path) => { // is path needed?
   return dialog.showOpenDialog(win);
+});
+
+// Loads a file by path (local or HTTP(S)) and returns base64-encoded content
+ipcMain.handle('loadImageAsBase64', async (event, path): Promise<string|null> => {
+  let content = null;
+  if (path.startsWith('http')) {
+    content = (await axios.get(path, { responseType: 'arraybuffer' })).data;
+  } else {
+    content = fs.readFileSync(path);
+  }
+
+  return content.toString('base64');
 });

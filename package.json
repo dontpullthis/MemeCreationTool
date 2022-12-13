@@ -17,6 +17,8 @@
   "dependencies": {},
   "devDependencies": {
     "@vitejs/plugin-vue": "^3.1.2",
+    "axios": "^1.2.1",
+    "debounce": "^1.2.1",
     "electron": "^22.0.0",
     "electron-builder": "^23.3.3",
     "primeicons": "^6.0.1",

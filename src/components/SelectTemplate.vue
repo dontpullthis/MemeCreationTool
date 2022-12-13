@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, Ref } from 'vue'
+import debounce from 'debounce';
 
 import Button from 'primevue/button';
 import Card from 'primevue/card';
@@ -31,7 +31,7 @@ defineProps({
 			
 			<div class="margin-top-min">
 				As an option, you can provide an image URL below:
-				<InputText id="remoteUrl" type="text" class="margin-top-min" style="width: 100%"
+				<InputText id="remoteUrl" type="text" class="margin-top-min" style="width: 100%" @keydown="onPathKeyDown" @paste="onPathKeyDown"
 					placeholder="Examples: https://example.com/my/image.png; d:\images\my_image\png; /home/me/my_image.png"
 					v-model="filePath"/>
 			</div>
@@ -43,12 +43,15 @@ defineProps({
 			Preview
 		</template>
 		<template #content>
-			No preview available at this point.
+			<div v-if="!fileContent">
+				No preview available at this point.
+			</div>
+			<img v-if="fileContent" v-bind:src="'data:image/png;base64, ' + fileContent" />
 		</template>
 	</Card>
 
 	<div class="margin-top-min">
-		<Button @click="onProceedClick" icon="pi pi-forward" iconPos="left" label="Proceed" style="float:right" :disabled="!canProceed"></Button>
+		<Button @click="onProceedClick" icon="pi pi-forward" iconPos="left" label="Proceed" style="float:right" :disabled="!fileContent"></Button>
 	</div>
 </template>
 
@@ -76,14 +79,22 @@ const { ipcRenderer } = require("electron");
 
 export default {
 	methods: {
+		loadImage: function() {
+			ipcRenderer
+				.invoke("loadImageAsBase64", this.filePath)
+				.then(result => this.fileContent = result);
+		},
 		onBrowseClick: function(e: MouseEvent) {
 			e.preventDefault();
-			ipcRenderer.invoke("showOpenDialog").then((e: Electron.OpenDialogReturnValue) => {
+			ipcRenderer
+				.invoke("showOpenDialog")
+				.then((e: Electron.OpenDialogReturnValue) => {
 				if (e.canceled || 0 === e.filePaths.length) {
 					return;
 				}
 
 				this.filePath = e.filePaths[0];
+				this.loadImage();
 			});
 
 		},
@@ -100,6 +111,11 @@ export default {
 
 			this.filePath = file.path;
 		},
+		onPathKeyDown: debounce(function(this: any, e: Event) {
+			if (this.filePath !== '') {
+				this.loadImage();
+			}
+		}, 500),
 		onProceedClick: function(e: MouseEvent) {
 			e.preventDefault();
 			// this.appState.page = AppPage.Edit;
@@ -107,8 +123,8 @@ export default {
 	},
 	data() {
 		return {
-			canProceed: false,
 			filePath: '',
+			fileContent: null,
 		}
 	}
 }
