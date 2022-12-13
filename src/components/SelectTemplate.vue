@@ -74,15 +74,11 @@ defineProps({
 <script lang="ts">
 const { ipcRenderer } = require("electron");
 
-// let filePath: Ref<string> = ref("");
-
-
-
 export default {
 	methods: {
 		onBrowseClick: function(e: MouseEvent) {
 			e.preventDefault();
-			ipcRenderer.invoke("openFile").then((e: Electron.OpenDialogReturnValue) => {
+			ipcRenderer.invoke("showOpenDialog").then((e: Electron.OpenDialogReturnValue) => {
 				if (e.canceled || 0 === e.filePaths.length) {
 					return;
 				}

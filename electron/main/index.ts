@@ -113,6 +113,6 @@ ipcMain.handle('open-win', (event, arg) => {
   }
 })
 
-ipcMain.handle('openFile', (event, path) => {
+ipcMain.handle('showOpenDialog', (event, path) => {
   return dialog.showOpenDialog(win);
 });
