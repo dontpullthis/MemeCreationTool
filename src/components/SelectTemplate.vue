@@ -36,12 +36,20 @@ defineProps({
 					v-model="filePath"/>
 			</div>
 		</template>
+	</Card>
 
-		<template #footer>
-			<Button @click="onProceedClick" icon="pi pi-forward" iconPos="left" label="Proceed" style="float:right"></Button>
-			<div style="clear: both"></div>
+	<Card>
+		<template #title>
+			Preview
+		</template>
+		<template #content>
+			No preview available at this point.
 		</template>
 	</Card>
+
+	<div class="margin-top-min">
+		<Button @click="onProceedClick" icon="pi pi-forward" iconPos="left" label="Proceed" style="float:right" :disabled="!canProceed"></Button>
+	</div>
 </template>
 
 <style scoped>
@@ -66,40 +74,45 @@ defineProps({
 <script lang="ts">
 const { ipcRenderer } = require("electron");
 
-let filePath: Ref<string> = ref("");
+// let filePath: Ref<string> = ref("");
 
-const onBrowseClick = (e: MouseEvent) => {
-	e.preventDefault();
-	ipcRenderer.invoke("openFile").then((e: Electron.OpenDialogReturnValue) => {
-		if (e.canceled || 0 === e.filePaths.length) {
-			return;
-		}
 
-		filePath.value = e.filePaths[0];
-	});
-
-};
-
-const onFileDragOver  = (e: DragEvent) => {
-	e.preventDefault();
-};
-
-const onFileDrop = (e: DragEvent) => {
-	e.preventDefault();
-	const files = (e.dataTransfer || {}).files || [];
-	const file = files.length ? files[0] : null;
-	if (!file) {
-		return;
-	}
-
-	filePath.value = file.path;
-};
 
 export default {
 	methods: {
+		onBrowseClick: function(e: MouseEvent) {
+			e.preventDefault();
+			ipcRenderer.invoke("openFile").then((e: Electron.OpenDialogReturnValue) => {
+				if (e.canceled || 0 === e.filePaths.length) {
+					return;
+				}
+
+				this.filePath = e.filePaths[0];
+			});
+
+		},
+		onFileDragOver: function(e: DragEvent) {
+			e.preventDefault();
+		},
+		onFileDrop: function(e: DragEvent) {
+			e.preventDefault();
+			const files = (e.dataTransfer || {}).files || [];
+			const file = files.length ? files[0] : null;
+			if (!file) {
+				return;
+			}
+
+			this.filePath = file.path;
+		},
 		onProceedClick: function(e: MouseEvent) {
 			e.preventDefault();
-			this.appState.page = AppPage.Edit;
+			// this.appState.page = AppPage.Edit;
+		},
+	},
+	data() {
+		return {
+			canProceed: false,
+			filePath: '',
 		}
 	}
 }
