@@ -4,6 +4,7 @@ import debounce from 'debounce';
 import Button from 'primevue/button';
 import Card from 'primevue/card';
 import InputText from 'primevue/inputtext';
+import ProgressSpinner from 'primevue/progressspinner';
 
 import AppState, { AppPage } from '../types/AppState'
 
@@ -20,7 +21,7 @@ defineProps({
 	<h1>Step 1. Select a template</h1>
 
 	<div style="display: flex;">
-		<div style="flex 1 1;">
+		<div style="flex: 1 1;">
 			<Card style="flex: 1 1">
 				<template #title>
 					Please provide a template image
@@ -47,18 +48,18 @@ defineProps({
 					Preview
 				</template>
 				<template #content>
-					<div v-if="!fileContent">
+					<div v-if="state === State.Start">
 						No preview available at this point.
 					</div>
-					<img v-if="fileContent" v-bind:src="'data:image/png;base64, ' + fileContent" style="max-height: 300px;"/>
+					<img v-if="state === State.Preview" v-bind:src="'data:image/png;base64, ' + fileContent" style="max-height: 300px;"/>
+					<ProgressSpinner v-if="state === State.Loading" />
+					<div v-if="state === State.Error">
+						An error occurred. Please check the file path that you provided.
+					</div>
 				</template>
 			</Card>
 		</div>
 	</div>
-
-
-
-
 
 	<div class="margin-top-min">
 		<Button @click="onProceedClick" icon="pi pi-forward" iconPos="left" label="Proceed" style="float:right" :disabled="!fileContent"></Button>
@@ -95,17 +96,30 @@ const blobToBase64 = (blob: Blob): Promise<string> => new Promise((resolve, reje
   reader.onerror = error => reject(error);
 });
 
+enum State {
+	Start, // initial
+	Loading, // loading an image
+	Preview, // display a preview
+	Error, // Failed to load an image
+};
+
 export default {
 	methods: {
-		loadImageFromPath: function() {
+		loadImageFromPath: async function() {
 			// Empty or no path separators found
 			if ('' === this.filePath || (-1 === this.filePath.indexOf('/') && -1 === this.filePath.indexOf('\\'))) {
 				return;
 			}
 
-			ipcRenderer
-				.invoke("loadImageAsBase64", this.filePath)
-				.then(result => this.fileContent = result);
+			this.state = State.Loading;
+
+			try {
+				const content = await ipcRenderer.invoke("loadImageAsBase64", this.filePath);
+				this.setContent(content);
+			} catch {
+				this.state = State.Error;
+			}
+
 		},
 		onBrowseClick: function(e: MouseEvent) {
 			e.preventDefault();
@@ -133,34 +147,42 @@ export default {
 			}
 
 			this.filePath = file.path;
+			this.loadImageFromPath();
 		},
 		onInputUpdate: debounce(function(this: any, e: Event) {
 			this.loadImageFromPath();
 		}, 1000),
 		onPaste: async function() {
 			const items = await navigator.clipboard.read();
-			items.forEach(item => {
-				item.types.forEach(async type => {
-					if (!type.startsWith("image/")) {
-						return;
-					}
-					const imageBlob = await item.getType(type);
-					let imageContent = await blobToBase64(imageBlob);
-					if (imageContent.startsWith('data:')) {
-						const pos = imageContent.search(',');
-						imageContent = imageContent.substring(pos + 1);
-					}
-					this.fileContent = imageContent;
-				});
-			});
+			items.forEach(item => item.types.forEach(async type => {
+				if (!type.startsWith("image/")) {
+					return;
+				}
+				const imageBlob = await item.getType(type);
+				let imageContent = await blobToBase64(imageBlob);
+				if (imageContent.startsWith('data:')) {
+					const pos = imageContent.search(',');
+					imageContent = imageContent.substring(pos + 1);
+				}
+				this.setContent(imageContent);
+			}));
 		},
 		onProceedClick: function(e: MouseEvent) {
 			e.preventDefault();
-			// this.appState.page = AppPage.Edit;
+			this.appState.page = AppPage.Edit;
 		},
+		setContent(content: string) {
+			this.fileContent = content;
+			this.state = State.Preview;
+		}
 	},
 	data() {
-		const result: { filePath: string, fileContent: string|null } = {
+		const result: {
+			state: State,
+			filePath: string,
+			fileContent: string|null
+		} = {
+			state: State.Start,
 			filePath: '',
 			fileContent: null,
 		}
