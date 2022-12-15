@@ -16,6 +16,7 @@ defineProps({
 </script>
 
 <template>
+<div @paste="onPaste">
 	<h1>Step 1. Select a template</h1>
 
 	<Card>
@@ -25,15 +26,15 @@ defineProps({
 		<template #content>
 			<div class="image-placeholder" @drop="onFileDrop" @dragover="onFileDragOver">
 				<div>
-					Please drag-and-drop an image here or press the <a href="#" @click="onBrowseClick">browse</a> button
+					Please drag-and-drop an image here, press the <a href="#" @click="onBrowseClick">browse</a> button, or paste an image from clipboard (ctrl/cmd+V)
 				</div>
 			</div>
 			
 			<div class="margin-top-min">
 				As an option, you can provide an image URL below:
-				<InputText id="remoteUrl" type="text" class="margin-top-min" style="width: 100%" @keydown="onPathKeyDown" @paste="onPathKeyDown"
+				<InputText id="remoteUrl" type="text" class="margin-top-min" style="width: 100%" @keydown="onInputUpdate"
 					placeholder="Examples: https://example.com/my/image.png; d:\images\my_image\png; /home/me/my_image.png"
-					v-model="filePath"/>
+					v-model="filePath" autofocus="true"/>
 			</div>
 		</template>
 	</Card>
@@ -53,6 +54,7 @@ defineProps({
 	<div class="margin-top-min">
 		<Button @click="onProceedClick" icon="pi pi-forward" iconPos="left" label="Proceed" style="float:right" :disabled="!fileContent"></Button>
 	</div>
+</div>
 </template>
 
 <style scoped>
@@ -77,9 +79,21 @@ defineProps({
 <script lang="ts">
 const { ipcRenderer } = require("electron");
 
+const blobToBase64 = (blob: Blob): Promise<string> => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.readAsDataURL(blob);
+  reader.onload = () => resolve((reader.result || '').toString());
+  reader.onerror = error => reject(error);
+});
+
 export default {
 	methods: {
-		loadImage: function() {
+		loadImageFromPath: function() {
+			// Empty or no path separators found
+			if ('' === this.filePath || (-1 === this.filePath.indexOf('/') && -1 === this.filePath.indexOf('\\'))) {
+				return;
+			}
+
 			ipcRenderer
 				.invoke("loadImageAsBase64", this.filePath)
 				.then(result => this.fileContent = result);
@@ -94,7 +108,7 @@ export default {
 				}
 
 				this.filePath = e.filePaths[0];
-				this.loadImage();
+				this.loadImageFromPath();
 			});
 
 		},
@@ -111,21 +125,37 @@ export default {
 
 			this.filePath = file.path;
 		},
-		onPathKeyDown: debounce(function(this: any, e: Event) {
-			if (this.filePath !== '') {
-				this.loadImage();
-			}
-		}, 500),
+		onInputUpdate: debounce(function(this: any, e: Event) {
+			this.loadImageFromPath();
+		}, 1000),
+		onPaste: async function() {
+			const items = await navigator.clipboard.read();
+			items.forEach(item => {
+				item.types.forEach(async type => {
+					if (!type.startsWith("image/")) {
+						return;
+					}
+					const imageBlob = await item.getType(type);
+					let imageContent = await blobToBase64(imageBlob);
+					if (imageContent.startsWith('data:')) {
+						const pos = imageContent.search(',');
+						imageContent = imageContent.substring(pos + 1);
+					}
+					this.fileContent = imageContent;
+				});
+			});
+		},
 		onProceedClick: function(e: MouseEvent) {
 			e.preventDefault();
 			// this.appState.page = AppPage.Edit;
 		},
 	},
 	data() {
-		return {
+		const result: { filePath: string, fileContent: string|null } = {
 			filePath: '',
 			fileContent: null,
 		}
+		return result;
 	}
 }
 </script>

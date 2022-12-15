@@ -14,15 +14,17 @@
   "engines": {
     "node": "^14.18.0 || >=16.0.0"
   },
-  "dependencies": {},
-  "devDependencies": {
-    "@vitejs/plugin-vue": "^3.1.2",
+  "dependencies": {
+    "@types/debounce": "^1.2.1",
     "axios": "^1.2.1",
     "debounce": "^1.2.1",
+    "primeicons": "^6.0.1",
+    "primevue": "^3.20.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^3.1.2",
     "electron": "^22.0.0",
     "electron-builder": "^23.3.3",
-    "primeicons": "^6.0.1",
-    "primevue": "^3.20.0",
     "typescript": "^4.8.4",
     "vite": "^3.2.2",
     "vite-plugin-electron": "^0.10.4",
