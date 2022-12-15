@@ -19,37 +19,46 @@ defineProps({
 <div @paste="onPaste">
 	<h1>Step 1. Select a template</h1>
 
-	<Card>
-		<template #title>
-			Please provide a template image
-		</template>
-		<template #content>
-			<div class="image-placeholder" @drop="onFileDrop" @dragover="onFileDragOver">
-				<div>
-					Please drag-and-drop an image here, press the <a href="#" @click="onBrowseClick">browse</a> button, or paste an image from clipboard (ctrl/cmd+V)
-				</div>
-			</div>
-			
-			<div class="margin-top-min">
-				As an option, you can provide an image URL below:
-				<InputText id="remoteUrl" type="text" class="margin-top-min" style="width: 100%" @keydown="onInputUpdate"
-					placeholder="Examples: https://example.com/my/image.png; d:\images\my_image\png; /home/me/my_image.png"
-					v-model="filePath" autofocus="true"/>
-			</div>
-		</template>
-	</Card>
+	<div style="display: flex;">
+		<div style="flex 1 1;">
+			<Card style="flex: 1 1">
+				<template #title>
+					Please provide a template image
+				</template>
+				<template #content>
+					<div class="image-placeholder" @drop="onFileDrop" @dragover="onFileDragOver">
+						<div>
+							Please drag-and-drop an image here, press the <a href="#" @click="onBrowseClick">browse</a> button, or paste an image from clipboard (ctrl/cmd+V)
+						</div>
+					</div>
 
-	<Card>
-		<template #title>
-			Preview
-		</template>
-		<template #content>
-			<div v-if="!fileContent">
-				No preview available at this point.
-			</div>
-			<img v-if="fileContent" v-bind:src="'data:image/png;base64, ' + fileContent" />
-		</template>
-	</Card>
+					<div class="margin-top-min">
+						As an option, you can provide an image URL below:
+						<InputText id="remoteUrl" type="text" class="margin-top-min" style="width: 100%" @keydown="onInputUpdate"
+							placeholder="Examples: https://example.com/my/image.png; d:\images\my_image\png; /home/me/my_image.png"
+							v-model="filePath" autofocus="true"/>
+					</div>
+				</template>
+			</Card>
+		</div>
+		<div style="flex: 1 1; display: flex; margin-left: 1rem;">
+			<Card style="display: flex; width: 100%;">
+				<template #title>
+					Preview
+				</template>
+				<template #content>
+					<div v-if="!fileContent">
+						No preview available at this point.
+					</div>
+					<img v-if="fileContent" v-bind:src="'data:image/png;base64, ' + fileContent" style="max-height: 300px;"/>
+				</template>
+			</Card>
+		</div>
+	</div>
+
+
+
+
 
 	<div class="margin-top-min">
 		<Button @click="onProceedClick" icon="pi pi-forward" iconPos="left" label="Proceed" style="float:right" :disabled="!fileContent"></Button>
