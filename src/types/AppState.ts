@@ -4,7 +4,7 @@ export enum AppPage {
   };
 
 export default class AppState {
-    filePath: string = ""
+    image: string = "" // base64-encoded
     page: AppPage = AppPage.SelectTemplate
 }
   

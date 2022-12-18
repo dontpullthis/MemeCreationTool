@@ -68,9 +68,6 @@ defineProps({
 </template>
 
 <style scoped>
-.margin-top-min {
-	margin-top: 1rem;
-}
 
 .image-placeholder {
 	border: 3px dashed gray;
@@ -169,6 +166,7 @@ export default {
 		},
 		onProceedClick: function(e: MouseEvent) {
 			e.preventDefault();
+			this.appState.image = this.fileContent || '';
 			this.appState.page = AppPage.Edit;
 		},
 		setContent(content: string) {

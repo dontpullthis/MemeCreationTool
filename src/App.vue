@@ -19,4 +19,10 @@ const appState = ref(new AppState());
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+.margin-top-min {
+	margin-top: 1rem;
+}
+
+
 </style>
