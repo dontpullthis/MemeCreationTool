@@ -1,10 +1,12 @@
+import SourceImage from './SourceImage';
+
 export enum AppPage {
     SelectTemplate,
     Edit,
   };
 
 export default class AppState {
-    image: string = "" // base64-encoded
+    image?: SourceImage
     page: AppPage = AppPage.SelectTemplate
 }
   

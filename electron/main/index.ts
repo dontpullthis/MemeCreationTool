@@ -124,7 +124,7 @@ ipcMain.handle('showOpenDialog', (event, path) => { // is path needed?
 });
 
 // Loads a file by path (local or HTTP(S)) and returns base64-encoded content
-ipcMain.handle('loadImageAsBase64', async (event, path): Promise<string|null> => {
+ipcMain.handle('loadImageAsBuffer', async (event, path): Promise<Buffer|null> => {
   let content = null;
   if (path.startsWith('http')) {
     content = (await axios.get(path, { responseType: 'arraybuffer' })).data;
@@ -132,5 +132,5 @@ ipcMain.handle('loadImageAsBase64', async (event, path): Promise<string|null> =>
     content = fs.readFileSync(path);
   }
 
-  return content.toString('base64');
+  return content;
 });

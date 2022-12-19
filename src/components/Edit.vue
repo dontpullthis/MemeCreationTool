@@ -74,7 +74,7 @@ export default {
 		this.canvas = new fabric.Canvas('canvas');
 		const that = this;
 
-		fabric.Image.fromURL(`data:image/png;base64,${this.appState.image}`, function(img) {
+		fabric.Image.fromURL(this.appState.image?.toDataUrl(), function(img) {
 			if (!that.canvas) {
 				return;
 			}
@@ -82,7 +82,7 @@ export default {
 			const { height, width } = img;
 			that.canvas.setDimensions({ height: `${height}`, width: `${width}`});
 
-			img.set({ left: 0, top: 0});
+			img.set({ left: 0, top: 0 });
 			img.selectable = false;
 			img.evented = false;
 			that.canvas.add(img);

@@ -7,6 +7,7 @@ import InputText from 'primevue/inputtext';
 import ProgressSpinner from 'primevue/progressspinner';
 
 import AppState, { AppPage } from '../types/AppState'
+import SourceImage from '../types/SourceImage';
 
 defineProps({
 	appState: {
@@ -37,7 +38,7 @@ defineProps({
 						As an option, you can provide an image URL below:
 						<InputText id="remoteUrl" type="text" class="margin-top-min" style="width: 100%" @keydown="onInputUpdate"
 							placeholder="Examples: https://example.com/my/image.png; d:\images\my_image\png; /home/me/my_image.png"
-							v-model="filePath" autofocus="true"/>
+							v-model="image.path" autofocus="true"/>
 					</div>
 				</template>
 			</Card>
@@ -51,7 +52,7 @@ defineProps({
 					<div v-if="state === State.Start">
 						No preview available at this point.
 					</div>
-					<img v-if="state === State.Preview" v-bind:src="'data:image/png;base64, ' + fileContent" style="max-height: 300px;"/>
+					<img v-if="state === State.Preview" v-bind:src="image.toDataUrl()" style="max-height: 300px;"/>
 					<ProgressSpinner v-if="state === State.Loading" />
 					<div v-if="state === State.Error">
 						An error occurred. Please check the file path that you provided.
@@ -62,7 +63,7 @@ defineProps({
 	</div>
 
 	<div class="margin-top-min">
-		<Button @click="onProceedClick" icon="pi pi-forward" iconPos="left" label="Proceed" style="float:right" :disabled="!fileContent"></Button>
+		<Button @click="onProceedClick" icon="pi pi-forward" iconPos="left" label="Proceed" style="float:right" :disabled="!image.content"></Button>
 	</div>
 </div>
 </template>
@@ -86,13 +87,6 @@ defineProps({
 <script lang="ts">
 const { ipcRenderer } = require("electron");
 
-const blobToBase64 = (blob: Blob): Promise<string> => new Promise((resolve, reject) => {
-  const reader = new FileReader();
-  reader.readAsDataURL(blob);
-  reader.onload = () => resolve((reader.result || '').toString());
-  reader.onerror = error => reject(error);
-});
-
 enum State {
 	Start, // initial
 	Loading, // loading an image
@@ -104,33 +98,31 @@ export default {
 	methods: {
 		loadImageFromPath: async function() {
 			// Empty or no path separators found
-			if ('' === this.filePath || (-1 === this.filePath.indexOf('/') && -1 === this.filePath.indexOf('\\'))) {
+			if (!this.image?.isPathUrlLike()) {
 				return;
 			}
-
+			
+			this.image.clearContent();
 			this.state = State.Loading;
-
 			try {
-				const content = await ipcRenderer.invoke("loadImageAsBase64", this.filePath);
-				this.setContent(content);
+				await this.image.fromOwnPath();
+				this.state = State.Preview;
 			} catch {
 				this.state = State.Error;
 			}
-
 		},
 		onBrowseClick: function(e: MouseEvent) {
 			e.preventDefault();
 			ipcRenderer
 				.invoke("showOpenDialog")
 				.then((e: Electron.OpenDialogReturnValue) => {
-				if (e.canceled || 0 === e.filePaths.length) {
-					return;
-				}
+					if (e.canceled || 0 === e.filePaths.length) {
+						return;
+					}
 
-				this.filePath = e.filePaths[0];
-				this.loadImageFromPath();
-			});
-
+					this.image.path = e.filePaths[0];
+					this.loadImageFromPath();
+				});
 		},
 		onFileDragOver: function(e: DragEvent) {
 			e.preventDefault();
@@ -142,13 +134,12 @@ export default {
 			if (!file) {
 				return;
 			}
-
-			this.filePath = file.path;
+			this.image.path = file.path;
 			this.loadImageFromPath();
 		},
 		onInputUpdate: debounce(function(this: any, e: Event) {
 			this.loadImageFromPath();
-		}, 1000),
+		}, 500),
 		onPaste: async function() {
 			const items = await navigator.clipboard.read();
 			items.forEach(item => item.types.forEach(async type => {
@@ -156,33 +147,27 @@ export default {
 					return;
 				}
 				const imageBlob = await item.getType(type);
-				let imageContent = await blobToBase64(imageBlob);
-				if (imageContent.startsWith('data:')) {
-					const pos = imageContent.search(',');
-					imageContent = imageContent.substring(pos + 1);
-				}
-				this.setContent(imageContent);
+				this.image = await SourceImage.fromBlob(imageBlob);
+				this.state = State.Preview;
 			}));
 		},
 		onProceedClick: function(e: MouseEvent) {
 			e.preventDefault();
-			this.appState.image = this.fileContent || '';
+			this.appState.image = this.image;
 			this.appState.page = AppPage.Edit;
 		},
-		setContent(content: string) {
-			this.fileContent = content;
+		setImage(image: SourceImage) {
+			this.image = image;
 			this.state = State.Preview;
 		}
 	},
 	data() {
 		const result: {
+			image: SourceImage,
 			state: State,
-			filePath: string,
-			fileContent: string|null
 		} = {
+			image: new SourceImage(),
 			state: State.Start,
-			filePath: '',
-			fileContent: null,
 		}
 		return result;
 	}
