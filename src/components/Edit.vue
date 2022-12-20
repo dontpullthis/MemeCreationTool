@@ -39,7 +39,7 @@ defineProps({
 	</div>
 
 	<div class="margin-top-min">
-		<Button @click="onProceedClick" icon="pi pi-forward" iconPos="left" label="Proceed" style="float:right"></Button>
+		<Button @click="onSaveClick" icon="pi pi-save" iconPos="left" label="Save an image" style="float:right"></Button>
 	</div>
 
 </template>
@@ -53,7 +53,7 @@ defineProps({
 
 export default {
 	methods: {
-		onProceedClick: function(e: MouseEvent) {
+		onSaveClick(e: MouseEvent) {
 			e.preventDefault();
 		},
 		onAddTextClick: function(e: MouseEvent) {
@@ -74,7 +74,7 @@ export default {
 		this.canvas = new fabric.Canvas('canvas');
 		const that = this;
 
-		fabric.Image.fromURL(this.appState.image?.toDataUrl(), function(img) {
+		fabric.Image.fromURL(this.appState.image?.toDataUrl() || '', function(img) {
 			if (!that.canvas) {
 				return;
 			}
