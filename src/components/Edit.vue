@@ -3,8 +3,10 @@ import { fabric } from 'fabric';
 
 import Button from 'primevue/button';
 import Card from 'primevue/card';
+import Message from 'primevue/message';
 
-import AppState, { AppPage } from '../types/AppState'
+import AppState from '../types/AppState'
+import { isFontAvailable } from '../utils/fonts';
 
 defineProps({
 	appState: {
@@ -17,6 +19,9 @@ defineProps({
 <template>
 	<h1>Step 2. Edit</h1>
 
+	<Message v-if="displayImpactFontWarning" severity="warn">The <b>Impact</b> proprietary font was not detected in your system.
+		It is recommended to install it for better experience.
+		For now the appication will fall back to standard fonts.</Message>
 	<div style="display: flex;">
 		<div style="flex: 3 3;">
 			<Card style="flex: 1 1">
@@ -50,6 +55,10 @@ defineProps({
 
 <script lang="ts">
 
+class Data {
+	canvas?: fabric.Canvas = undefined
+	displayImpactFontWarning: boolean = false
+}
 
 export default {
 	methods: {
@@ -83,6 +92,7 @@ export default {
 				target.enterEditing();
 			}
 		});
+		this.displayImpactFontWarning = !isFontAvailable('16px Impact');
 		const that = this;
 
 		fabric.Image.fromURL(this.appState.image?.toDataUrl() || '', function(img) {
@@ -100,13 +110,7 @@ export default {
 		});
 	},
 	data() {
-		const d: {
-			canvas: fabric.Canvas | null,
-		} = {
-			canvas: null,
-		}
-
-		return d;
+		return new Data();
 	}
 }
 </script>
