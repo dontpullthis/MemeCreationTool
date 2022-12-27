@@ -55,6 +55,9 @@ defineProps({
 
 <script lang="ts">
 
+const MAX_WIDTH_PX = 800;
+const MAX_HEIGHT_PX = 600;
+
 class Data {
 	canvas?: fabric.Canvas = undefined
 	displayImpactFontWarning: boolean = false
@@ -81,6 +84,8 @@ export default {
 		},
 	},
 	mounted() {
+		this.displayImpactFontWarning = !isFontAvailable('16px Impact');
+
 		this.canvas = new fabric.Canvas('canvas');
 		this.canvas?.on("mouse:dblclick", (e: fabric.IEvent<MouseEvent>) => {
 			const target = e.target;
@@ -92,16 +97,23 @@ export default {
 				target.enterEditing();
 			}
 		});
-		this.displayImpactFontWarning = !isFontAvailable('16px Impact');
 		const that = this;
 
 		fabric.Image.fromURL(this.appState.image?.toDataUrl() || '', function(img) {
 			if (!that.canvas) {
 				return;
 			}
+			console.log(`Img dimensions 0: ${img.getScaledWidth()} / ${img.getScaledHeight()}`);
+			if (img.getScaledHeight() > MAX_HEIGHT_PX) {
+				img.scaleToHeight(MAX_HEIGHT_PX);
+			}
+			console.log(`Img dimensions 1: ${img.getScaledWidth()} / ${img.getScaledHeight()}`);
+			if (img.getScaledWidth() > MAX_WIDTH_PX) {
+				img.scaleToWidth(MAX_WIDTH_PX);
+			}
+			console.log(`Img dimensions 2: ${img.getScaledWidth()} / ${img.getScaledHeight()}`);
 
-			const { height, width } = img;
-			that.canvas.setDimensions({ height: `${height}`, width: `${width}`});
+			that.canvas.setDimensions({ height: img.getScaledHeight(), width: img.getScaledWidth()});
 
 			img.set({ left: 0, top: 0 });
 			img.selectable = false;
