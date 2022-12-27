@@ -70,7 +70,7 @@ export default {
 		},
 		onAddTextClick: function(e: MouseEvent) {
 			e.preventDefault();
-			const txt = new fabric.Textbox('new', {
+			const txt = new fabric.Textbox('NEW TEXT', {
 				fill: 'white',
 				left: (this.canvas?.width || 0) / 2,
 				top: (this.canvas?.height || 0) / 2,
@@ -97,21 +97,27 @@ export default {
 				target.enterEditing();
 			}
 		});
+
+		this.canvas.on('text:changed', function(opt) {
+			const target = opt.target;
+			if (!(target instanceof fabric.Textbox)) {
+				return;
+			}
+			target.text = target.text?.toUpperCase();
+		});
+
 		const that = this;
 
 		fabric.Image.fromURL(this.appState.image?.toDataUrl() || '', function(img) {
 			if (!that.canvas) {
 				return;
 			}
-			console.log(`Img dimensions 0: ${img.getScaledWidth()} / ${img.getScaledHeight()}`);
 			if (img.getScaledHeight() > MAX_HEIGHT_PX) {
 				img.scaleToHeight(MAX_HEIGHT_PX);
 			}
-			console.log(`Img dimensions 1: ${img.getScaledWidth()} / ${img.getScaledHeight()}`);
 			if (img.getScaledWidth() > MAX_WIDTH_PX) {
 				img.scaleToWidth(MAX_WIDTH_PX);
 			}
-			console.log(`Img dimensions 2: ${img.getScaledWidth()} / ${img.getScaledHeight()}`);
 
 			that.canvas.setDimensions({ height: img.getScaledHeight(), width: img.getScaledWidth()});
 

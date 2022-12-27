@@ -22,8 +22,8 @@ defineProps({
 	<h1>Step 1. Select a template</h1>
 
 	<div style="display: flex;">
-		<div style="flex: 1 1;">
-			<Card style="flex: 1 1">
+		<div class="main-block">
+			<Card style="flex: 1 1; height: 100%">
 				<template #title>
 					Please provide a template image
 				</template>
@@ -34,7 +34,7 @@ defineProps({
 						</div>
 					</div>
 
-					<div class="margin-top-min">
+					<div class="margin-top-min" style="flex-basis: content;">
 						As an option, you can provide an image URL below:
 						<InputText id="remoteUrl" type="text" class="margin-top-min" style="width: 100%" @keydown="onInputUpdate"
 							placeholder="Examples: https://example.com/my/image.png; d:\images\my_image\png; /home/me/my_image.png"
@@ -43,8 +43,8 @@ defineProps({
 				</template>
 			</Card>
 		</div>
-		<div style="flex: 1 1; display: flex; margin-left: 1rem;">
-			<Card style="display: flex; width: 100%;">
+		<div style="display: flex; margin-left: 1rem;" class="main-block">
+			<Card style="display: flex; width: 100%; height: 100%">
 				<template #title>
 					Preview
 				</template>
@@ -69,7 +69,6 @@ defineProps({
 </template>
 
 <style scoped>
-
 .image-placeholder {
 	border: 3px dashed gray;
 	width: 100%;
@@ -81,6 +80,11 @@ defineProps({
 	text-align: center;
 	padding: 1rem;
 	
+}
+
+.main-block {
+	flex: 1 1;
+	height: 400px;
 }
 </style>
 
