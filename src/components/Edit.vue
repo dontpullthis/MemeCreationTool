@@ -39,7 +39,7 @@ defineProps({
 	</div>
 
 	<div class="margin-top-min">
-		<Button @click="onProceedClick" icon="pi pi-forward" iconPos="left" label="Proceed" style="float:right"></Button>
+		<Button @click="onSaveClick" icon="pi pi-save" iconPos="left" label="Save an image" style="float:right"></Button>
 	</div>
 
 </template>
@@ -53,28 +53,39 @@ defineProps({
 
 export default {
 	methods: {
-		onProceedClick: function(e: MouseEvent) {
+		onSaveClick(e: MouseEvent) {
 			e.preventDefault();
 		},
 		onAddTextClick: function(e: MouseEvent) {
 			e.preventDefault();
-			const txt = new fabric.Textbox('hello', {
+			const txt = new fabric.Textbox('new', {
 				fill: 'white',
-				left: 0,
-				top: 0,
+				left: (this.canvas?.width || 0) / 2,
+				top: (this.canvas?.height || 0) / 2,
 				editable: true,
-				fontFamily: 'Impact',
+				// Impact needs to be installed to system fonts
+				fontFamily: "'Impact', Tahoma, Verdana, sans-serif",
+				fontWeight: 'bold',
 				stroke: 'black',
 			});
 			this.canvas?.add(txt);
-			txt.enterEditing();
 		},
 	},
 	mounted() {
 		this.canvas = new fabric.Canvas('canvas');
+		this.canvas?.on("mouse:dblclick", (e: fabric.IEvent<MouseEvent>) => {
+			const target = e.target;
+			if (!target) {
+				return;
+			}
+
+			if (target instanceof fabric.Textbox) {
+				target.enterEditing();
+			}
+		});
 		const that = this;
 
-		fabric.Image.fromURL(this.appState.image?.toDataUrl(), function(img) {
+		fabric.Image.fromURL(this.appState.image?.toDataUrl() || '', function(img) {
 			if (!that.canvas) {
 				return;
 			}
