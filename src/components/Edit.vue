@@ -58,18 +58,17 @@ export default {
 		},
 		onAddTextClick: function(e: MouseEvent) {
 			e.preventDefault();
-			// var myfont = new fabric.FontFaceObserver(font);
 			const txt = new fabric.Textbox('new', {
 				fill: 'white',
 				left: (this.canvas?.width || 0) / 2,
 				top: (this.canvas?.height || 0) / 2,
 				editable: true,
-				fontFamily: "'Anton'",
+				// Impact needs to be installed to system fonts
+				fontFamily: "'Impact', Tahoma, Verdana, sans-serif",
 				fontWeight: 'bold',
 				stroke: 'black',
 			});
 			this.canvas?.add(txt);
-			// txt.enterEditing();
 		},
 	},
 	mounted() {
