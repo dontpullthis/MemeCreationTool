@@ -58,20 +58,32 @@ export default {
 		},
 		onAddTextClick: function(e: MouseEvent) {
 			e.preventDefault();
-			const txt = new fabric.Textbox('hello', {
+			// var myfont = new fabric.FontFaceObserver(font);
+			const txt = new fabric.Textbox('new', {
 				fill: 'white',
-				left: 0,
-				top: 0,
+				left: (this.canvas?.width || 0) / 2,
+				top: (this.canvas?.height || 0) / 2,
 				editable: true,
-				fontFamily: 'Impact',
+				fontFamily: "'Anton'",
+				fontWeight: 'bold',
 				stroke: 'black',
 			});
 			this.canvas?.add(txt);
-			txt.enterEditing();
+			// txt.enterEditing();
 		},
 	},
 	mounted() {
 		this.canvas = new fabric.Canvas('canvas');
+		this.canvas?.on("mouse:dblclick", (e: fabric.IEvent<MouseEvent>) => {
+			const target = e.target;
+			if (!target) {
+				return;
+			}
+
+			if (target instanceof fabric.Textbox) {
+				target.enterEditing();
+			}
+		});
 		const that = this;
 
 		fabric.Image.fromURL(this.appState.image?.toDataUrl() || '', function(img) {
