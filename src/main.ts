@@ -1,3 +1,4 @@
+import 'electron'
 import { createApp } from 'vue'
 
 import App from './App.vue'
